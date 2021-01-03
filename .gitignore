@@ -1,0 +1,7 @@
+text.py
+
+*.py[co]
+*.log
+*.pkl
+zT
+text
