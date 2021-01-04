@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 from logging import handlers
-
+from dataQueue import *
 
 class oplog():
 
@@ -25,7 +25,7 @@ class oplog():
         # fh.setLevel(logging.INFO) 
 
 
-        handler = logging.handlers.RotatingFileHandler(filename='C:/Users/wby/Desktop/'+name+'.log', maxBytes=10000, backupCount=2,encoding='utf-8')
+        handler = logging.handlers.RotatingFileHandler(filename= cofpath + name+'.log', maxBytes=10000, backupCount=2,encoding='utf-8')
         handler.setFormatter(fmt)
 
         # logger.handlers.append(fh)
