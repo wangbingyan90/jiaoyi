@@ -56,7 +56,7 @@ class TOption:
             self.chile.initPrice = self.price
             self.chile.price = self.price
             return self.chile
-        self.chile = TOption(self.name,self.option,self.share,self.price,self.num/self.share.oneHand,self.ratio*100/2)
+        self.chile = TOption(self.name,self.option,self.share,self.price,self.num/self.share.oneHand/2,self.ratio*100/2)
         self.chile.father = self
         return self.chile
         
@@ -74,15 +74,15 @@ class TOption:
                     self.buyPrice = round(price - self.ratio*100,self.share.decimal)
                     self.sellPrice = round(price + self.ratio*100,self.share.decimal)
                 elif price ==  round(self.initPrice - self.ratio*100,self.share.decimal):
-                    self.buyPrice = round(price - self.ratio*100*3,self.share.decimal)
+                    self.buyPrice = round(price - self.ratio*100,self.share.decimal)
                     self.sellPrice = round(price + self.ratio*100,self.share.decimal) 
                 elif price ==  round(self.initPrice + self.ratio*100,self.share.decimal):
                     self.buyPrice = round(price - self.ratio*100,self.share.decimal)
-                    self.sellPrice = round(price + self.ratio*100*3,self.share.decimal)
-                elif price ==  round(self.initPrice + self.ratio*100*4,self.share.decimal):
+                    self.sellPrice = round(price + self.ratio*100,self.share.decimal)
+                elif price ==  round(self.initPrice + self.ratio*100*2,self.share.decimal):
                     self.father.addCosts(state,price) 
                     return True    
-                elif price ==  round(self.initPrice - self.ratio*100*4,self.share.decimal):
+                elif price ==  round(self.initPrice - self.ratio*100*2,self.share.decimal):
                     self.father.addCosts(state,price)
                     return True  
             else:
@@ -103,7 +103,7 @@ class TOption:
             return False
         else:
             self.circle = self.circle + 1
-            if self.circle > 30000:
+            if self.circle > 40:
                 return True
             else:
                 return False
@@ -338,7 +338,7 @@ def ree():
 
 if __name__ == "__main__":
     # mining()
-    op2 = TOption('快速做T2','buy_sell',share('128010'),139.6,2,0.6)
+    op2 = TOption('快速做T2','buy_sell',share('128010'),139,2,0.8)
     # op2 = TOption('快速做T1','buy_sell',share('1230611'),132,1,1)
 
     optionQueue.put(op2)    

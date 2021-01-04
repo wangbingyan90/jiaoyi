@@ -67,8 +67,12 @@ class Ioption(abc.ABC):
         cls.initClient()
         while True:
 
+            data = dataQueue.optionQueue.get()  
+
             if data == 're':
+                pass
 
 
             else:
+                pass
 
