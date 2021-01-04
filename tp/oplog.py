@@ -25,7 +25,7 @@ class oplog():
         # fh.setLevel(logging.INFO) 
 
 
-        handler = logging.handlers.RotatingFileHandler(filename='C:/Users/wby/Desktop/'+name+'.log', maxBytes=3000, backupCount=2,encoding='utf-8')
+        handler = logging.handlers.RotatingFileHandler(filename='C:/Users/wby/Desktop/'+name+'.log', maxBytes=10000, backupCount=2,encoding='utf-8')
         handler.setFormatter(fmt)
 
         # logger.handlers.append(fh)
