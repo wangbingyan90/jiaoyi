@@ -174,12 +174,12 @@ class Xls(BaseStrategy):
         super().__init__()
         self.tmp_folder = tmp_folder
 
-    def saveData(self, control_id: int):
+    def saveData(self, control_id: int,key = "^R"):
         grid = self._get_grid(control_id)
 
         # ctrl+s 保存 grid 内容为 xls 文件 问题
         self._set_foreground(grid)  # setFocus buggy, instead of SetForegroundWindow
-        grid.type_keys("^R", set_foreground=False)
+        grid.type_keys(key, set_foreground=False)
         grid.type_keys("^s", set_foreground=False)
         grid.type_keys("%N", set_foreground=False)
 
@@ -231,8 +231,8 @@ class Xls(BaseStrategy):
         return df.to_dict("records")
 
 
-    def get_pd(self,control_id):
-        path = self.saveData(control_id)
+    def get_pd(self,control_id,key = "^R"):
+        path = self.saveData(control_id,key)
         try:
             re = self._format_grid_data_pd(path)
         except IOError as e:

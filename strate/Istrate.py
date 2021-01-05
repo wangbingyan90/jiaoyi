@@ -1,7 +1,9 @@
-import abc,os,threading,time
+import abc,os,threading,time,sys
 
-from easytrader import api
 from config import stratelog,config
+sys.path.append(".")
+from easytrader import api
+
 
 class Istrate(abc.ABC):
 
@@ -13,19 +15,23 @@ class Istrate(abc.ABC):
     def __init__(self,name,share = None, price = 0, num = 0, change = 0):
 
         self.step = 0 # 0为开仓状态，1为调仓状态，2，清除状态
-
-        self.logger = stratelog.stratelog(name+'['+share.code+']')
-        self.readConfig()
+        filename = config.homePath + name+'['+share.code+']'+'.log'
+        name = name+'['+share.code+']'
+        self.readConfig(price,filename)
+        self.logger = stratelog.stratelog(name,filename)
+        
 
         self.name = name
         self.share = share
         self.num = num
         self.oneHand = num * share.oneHand
         self.change = change
+        
+        self.setPrice('开', price)
 
 
-    def readConfig(self, price):
-        filename = config.homePath + name+'['+share.code+']'+'.log'
+    def readConfig(self, price,filename):
+        
         if os.path.exists(filename):
             f = open(filename,encoding = 'utf8')
             line = f.readlines()
@@ -35,6 +41,29 @@ class Istrate(abc.ABC):
                 last_line = line[-1]
                 self.price = float(last_line.split(',')[-1])
 
+
+    def optionRun(self):
+        resoult = Istrate.client.aout_buy_sell(self.share.code
+                                            ,self.buyPrice
+                                            ,self.sellPrice
+                                            ,self.oneHand)
+        if resoult['state'] == 'success':
+            self.sellEntrust = resoult['卖出合同']
+            self.buyEntrust = resoult['买入合同']
+            self.rbuyPrice = resoult['buyprice']
+            self.rsellPrice = resoult['sellprice']
+            return True
+        else:
+            if '错误合同' in resoult: 
+                if '资金不足' in resoult['content']:
+                    self.sellEntrust = resoult['错误合同']
+                    self.buyEntrust = resoult['错误合同']
+                    self.rbuyPrice = resoult['buyprice']
+                    self.rsellPrice = resoult['sellprice']                        
+                    return False
+            else:
+                self.logger.info(resoult['content'])
+                return False
 
     # 开仓条件及操作
     def start(self):
@@ -48,19 +77,16 @@ class Istrate(abc.ABC):
 
     # 清除条件及操作
     def end(self):
-        return False
+        return True
 
     
-    def run(self):
+    def run(self,df):
 
         if self.step == 0:
             self.start()
 
-        elif self.step == 1:
-            self.adjust()
-
-        elif self.step == 2:
-            self.isFinish()
+        elif self.step == 1 and self.end():
+            self.adjust(df)
 
 
     
@@ -100,12 +126,15 @@ class Istrate(abc.ABC):
             data = config.strateQueue.get()
 
             if isinstance(data,list):
+
+                df = cls.client.getEntrust()
                 
                 for strate in data:
-                    strate.run()
+                    strate.run(df)
 
             else:
-                data.start()
-                cls.rerunList.append(data)
+                if data.start():
+                    data.step = 2
+                    cls.rerunList.append(data)
 
 

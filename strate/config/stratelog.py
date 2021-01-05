@@ -2,12 +2,12 @@
 import logging
 from logging import handlers
 
-import config
+from config import config
 
 class stratelog():
 
     
-    def __init__(self,name):
+    def __init__(self,name,filename):
         logger = logging.getLogger(name)
         logger.setLevel(logging.INFO)
         logger.propagate = False
@@ -19,8 +19,8 @@ class stratelog():
         )
 
         # 屏幕打印
-        # ch = logging.StreamHandler()
-        # ch.setFormatter(fmt)
+        ch = logging.StreamHandler()
+        ch.setFormatter(fmt)
 
         # 文本打印
         # fh = logging.FileHandler(filename='C:/Users/wby/Desktop/'+name+'.log',encoding='utf-8')
@@ -28,12 +28,12 @@ class stratelog():
         # fh.setLevel(logging.INFO) 
 
         # 自定义打印
-        handler = logging.handlers.RotatingFileHandler(filename= config.homePath + name+'.log', maxBytes=10000, backupCount=2,encoding='utf-8')
+        handler = logging.handlers.RotatingFileHandler(filename= filename, maxBytes=10000, backupCount=2,encoding='utf-8')
         handler.setFormatter(fmt)
 
         # 注册
         # logger.handlers.append(fh)
-        # logger.handlers.append(ch)
+        logger.handlers.append(ch)
         logger.handlers.append(handler)
         self.logger = logger
 
