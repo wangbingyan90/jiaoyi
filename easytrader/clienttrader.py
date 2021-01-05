@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from wxpy import *
 import abc
 import functools
 import logging
