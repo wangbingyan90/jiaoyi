@@ -27,7 +27,7 @@ class Istrate(abc.ABC):
         self.oneHand = num * share.oneHand
         self.change = change
         
-        self.setPrice('开', price)
+        self.setPrice('开', self.price)
 
 
     def readConfig(self, price,filename):
@@ -40,6 +40,8 @@ class Istrate(abc.ABC):
             else:
                 last_line = line[-1]
                 self.price = float(last_line.split(',')[-1])
+        else:
+            self.price = price
 
 
     def optionRun(self):
@@ -60,7 +62,7 @@ class Istrate(abc.ABC):
                     self.buyEntrust = resoult['错误合同']
                     self.rbuyPrice = resoult['buyprice']
                     self.rsellPrice = resoult['sellprice']                        
-                    return False
+                    return True
             else:
                 self.logger.info(resoult['content'])
                 return False
@@ -134,7 +136,7 @@ class Istrate(abc.ABC):
 
             else:
                 if data.start():
-                    data.step = 2
+                    data.step = 1
                     cls.rerunList.append(data)
 
 
