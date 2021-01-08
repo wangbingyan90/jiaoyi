@@ -20,16 +20,16 @@ class Istrate(abc.ABC):
         self.readConfig(price,filename)
         self.logger = stratelog.stratelog(name,filename)
         
-
         self.name = name
         self.share = share
         self.num = num
         self.oneHand = num * share.oneHand
         self.change = change
         
+        self.state = '常'
         self.setPrice('开', self.price)
 
-
+    # 读取配置价格
     def readConfig(self, price,filename):
         
         if os.path.exists(filename):
@@ -43,7 +43,7 @@ class Istrate(abc.ABC):
         else:
             self.price = price
 
-
+    # 进行操作
     def optionRun(self):
         resoult = Istrate.client.aout_buy_sell(self.share.code
                                             ,self.buyPrice
@@ -81,7 +81,28 @@ class Istrate(abc.ABC):
     def end(self):
         return True
 
+    # 取消多个合同
+    def cancel_entrusts(self,df,entrusts):
+        entrustIndex = []
+        for entrust in entrusts:
+            if len(df.loc[df['合同编号'] == entrust]) == 0:
+                pass
+            else:
+                entrustIndex.append(int(df.loc[df['合同编号'] == entrust].index[0]) + 1)
+        entrustIndex.sort(reverse=True)
+        for index in entrustIndex:
+            self.client.have_cancel_entrust(index)
+
+    # 取消单个合同
+    def cancel_entrust(self,df,entrust):
+        # 不存在
+        if len(df.loc[df['合同编号'] == entrust]) == 0:
+            return False
+        else:
+            self.client.have_cancel_entrust(int(df.loc[df['合同编号'] == entrust].index[0]) + 1)
+            return True
     
+
     def run(self,df):
 
         if self.step == 0:

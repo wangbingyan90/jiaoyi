@@ -19,7 +19,7 @@ class TpriceStare(Istrate):
             self.price = price
         self.buyPrice = round(self.price - self.change,self.share.decimal)
         self.sellPrice = round(self.price + self.change,self.share.decimal)
-        self.logger.info(state + ','+ str(price))
+        self.logger.info(self.state + state + ','+ str(price))
 
 
 
@@ -32,13 +32,13 @@ class TpriceStare(Istrate):
 
         if len(df.loc[df['合同编号'] == self.sellEntrust]) == 0:
             # 完成卖出 涨
-            self.client.have_cancel_entrust(int(df.loc[df['合同编号'] == self.buyEntrust].index[0])+1)
+            self.cancel_entrust(df,self.buyEntrust)
             self.setPrice('涨',self.sellPrice)
             self.optionRun()
 
         elif len(df.loc[df['合同编号'] == self.buyEntrust]) == 0:
             # 完成买入 跌
-            self.client.have_cancel_entrust(int(df.loc[df['合同编号'] == self.sellEntrust].index[0])+1)
+            self.cancel_entrust(df,self.sellEntrust)
             self.setPrice('跌',self.buyPrice)
             self.optionRun()
 
