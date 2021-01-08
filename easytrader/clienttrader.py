@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from wxpy import *
 import abc
 import functools
 import logging
@@ -257,6 +256,11 @@ class ClientTrader(IClientTrader):
         self._switch_left_menus(["撤单[F3]"])
         return self.grid_strategy_instance.get_pd(1047)
 
+    # 获取仓位
+    @perf_clock
+    def getSpace(self):
+        self._switch_left_menus(["买入[F1]"])
+        return self.grid_strategy_instance.get_pd(1047,"^W")
 
 
     @perf_clock
