@@ -67,12 +67,12 @@ class TSpriceStare(TpriceStare):
         elif len(df.loc[df['合同编号'] == self.buyEntrust]) == 0:
             # 完成买入 跌
             self.coverDeclineReduceRun()
-            self.cancel_entrust(df,self.buyEntrust)
+            self.cancel_entrust(df,self.sellEntrust)
             self.setPrice('跌',self.buyPrice)
             self.optionRun()
             self.reCount = 0
 
-        elif self.reCount > 5 and self.reduce > 0: #缩放执行
+        elif self.reCount > 30 and self.reduce > 0: #缩放执行
             self.reduce = self.reduce - 1
             self.cancel_entrusts(df,[self.sellEntrust,self.buyEntrust])
             self.reduceRun()
@@ -87,7 +87,7 @@ class TSpriceStare(TpriceStare):
 
 
 if __name__ == "__main__":
-    t = TSpriceStare('测试',share('123061'),136.5,4,2.0,True)
+    t = TSpriceStare('测试',share('123061'),135.6,4,0.4,True)
     config.strateQueue.put(t) 
     TpriceStare.work()
 
