@@ -8,8 +8,8 @@ class TSpriceStare(TpriceStare):
     多次存储iniPrice数组存储问题，且目前没有必要
     '''
 
-    def __init__(self,name,share = None,price = 0,num = 0,change = 0):
-        super().__init__(name,share,price,num,change)
+    def __init__(self,name,share = None,price = 0,num = 0,change = 0,bug = False):
+        super().__init__(name,share,price,num,change,bug)
         self.reCount = 0 # 循环计数器
         self.DFreduce = 1 # 定义可缩小次数
         self.reduce = 1 # 可缩小次数
@@ -72,7 +72,7 @@ class TSpriceStare(TpriceStare):
             self.optionRun()
             self.reCount = 0
 
-        elif self.reCount > 35 and self.reduce > 0: #缩放执行
+        elif self.reCount > 5 and self.reduce > 0: #缩放执行
             self.reduce = self.reduce - 1
             self.cancel_entrusts(df,[self.sellEntrust,self.buyEntrust])
             self.reduceRun()
@@ -87,7 +87,7 @@ class TSpriceStare(TpriceStare):
 
 
 if __name__ == "__main__":
-    t = TSpriceStare('测试',share('128010'),139,2,0.8)
+    t = TSpriceStare('测试',share('123061'),136.5,4,2.0,True)
     config.strateQueue.put(t) 
     TpriceStare.work()
 

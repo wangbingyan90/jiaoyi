@@ -12,12 +12,15 @@ class Istrate(abc.ABC):
     client = api.use('htzq_client') # 客户端对象
 
     
-    def __init__(self,name,share = None, price = 0, num = 0, change = 0):
+    def __init__(self,name,share = None, price = 0, num = 0, change = 0, bug = False):
 
         self.step = 0 # 0为开仓状态，1为调仓状态，2，清除状态
         filename = config.homePath + name+'['+share.code+']'+'.log'
         name = name+'['+share.code+']'
-        self.readConfig(price,filename)
+        if bug:
+            self.price = price
+        else:
+            self.readConfig(price,filename)
         self.logger = stratelog.stratelog(name,filename)
         
         self.name = name

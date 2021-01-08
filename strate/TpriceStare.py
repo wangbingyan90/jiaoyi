@@ -7,8 +7,8 @@ class TpriceStare(Istrate):
     基本做T
     '''
 
-    def __init__(self,name,share = None,price = 0,num = 0,change = 0):
-        super().__init__(name,share,price,num,change)
+    def __init__(self,name,share = None,price = 0,num = 0,change = 0,bug = False):
+        super().__init__(name,share,price,num,change,bug)
 
     
 
@@ -47,6 +47,6 @@ class TpriceStare(Istrate):
 
 
 if __name__ == "__main__":
-    t = TpriceStare('测试',share('128010'),134,2,0.4)
+    t = TpriceStare('测试',share('123061'),137.5,5,0.5,bug = True)
     config.strateQueue.put(t) 
     TpriceStare.work()
