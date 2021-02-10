@@ -63,10 +63,14 @@ class TradePopDialogHandler(PopDialogHandler):
     def handle(self, title) -> Optional[dict]:
         if title == "委托确认":#买入 1768  卖出 1041   单一 1040 Static7
             content = self._app.top_window().Static2.window_text()
-            if len(content)>3:
+
+            # 单向委托
+            if len(content)>3: 
                 price = re.findall(r"价格：(\d+\.\d+)", content)[0]
+                self._submit_by_shortcut()
                 return {'price':float(price)}
             
+            # 双向委托
             buyContent = self._app.top_window().Static3.window_text()
             sellContent = self._app.top_window().Static5.window_text()
             buyprice = re.findall(r"价格：(\d+\.\d+)", buyContent)[0]

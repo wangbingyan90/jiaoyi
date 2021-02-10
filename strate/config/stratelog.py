@@ -2,12 +2,11 @@
 import logging
 from logging import handlers
 
-from config import config
-
 class stratelog():
 
     
-    def __init__(self,name,filename):
+    def __init__(self,name,filename,state = None):
+        self.state = state
         logger = logging.getLogger(name)
         logger.setLevel(logging.INFO)
         logger.propagate = False
@@ -39,10 +38,19 @@ class stratelog():
 
     
     def info(self,message):
+        if self.state:
+            return self.logger.info(
+                ','+ str(self.state.step) +
+                ',状态,'+ message +
+                ',价格,'+ str(self.state.price) +
+                ',库存,'+ str(self.state.have) +
+                ',买入合同,'+self.state.buyEntrust +
+                ',卖出合同,'+self.state.sellEntrust
+            )
         return self.logger.info(message)
 
 
 if __name__ == "__main__":
-    op2 = stratelog('qqqq')
+    op2 = stratelog('qqqq','asd')
     for i in range(100):
         op2.info(i)

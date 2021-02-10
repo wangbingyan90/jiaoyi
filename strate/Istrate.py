@@ -12,42 +12,62 @@ class Istrate(abc.ABC):
     client = api.use('htzq_client') # 客户端对象
 
     
-    def __init__(self,name,share = None, price = 0, num = 0, change = 0, bug = False):
+    def __init__(self,name,step = 0,share = None, price = 0, num = 0, change = 0, have = 0, bug = False):
 
-        self.step = 0 # 0为开仓状态，1为调仓状态，2，清除状态
+        self.step = step # 0为开仓状态，5为进行开仓，10开仓完毕，15进行调仓状态，20为清仓状态
+        self.have = have
+        self.state = '常'
+        self.price = price
         filename = config.homePath + name+'['+share.code+']'+'.log'
         name = name+'['+share.code+']'
-        if bug:
-            self.price = price
-        else:
-            self.readConfig(price,filename)
-        self.logger = stratelog.stratelog(name,filename)
+        self.sellEntrust = 'null'
+        self.buyEntrust = 'null'
+
+        self.readConfig(price,filename)
+        # if bug:
+        #     self.price = price
+
+        self.logger = stratelog.stratelog(name,filename,self)
         
         self.name = name
         self.share = share
         self.num = num
         self.oneHand = num * share.oneHand
         self.change = change
-        
-        self.state = '常'
-        self.setPrice('开', self.price)
 
     # 读取配置价格
     def readConfig(self, price,filename):
-        
+        # 日志模式 未实现
         if os.path.exists(filename):
             f = open(filename,encoding = 'utf8')
             line = f.readlines()
-            if len(line) == 0:
-                self.price = price # 交易价格
-            else:
-                last_line = line[-1]
-                self.price = float(last_line.split(',')[-1])
-        else:
-            self.price = price
+            try:
+                last_line = (line[-1])[:-1].split(',')
+                self.step = int(last_line[1])
+                state = last_line[3]
+                self.price = float(last_line[5])
+                self.have = int(last_line[7])
+                self.buyEntrust = last_line[9]
+                self.sellEntrust = last_line[11]
+            except BaseException:
+                print('日志读取失败')
 
-    # 进行操作
-    def optionRun(self):
+    
+    def buy(self):
+        resoult = Istrate.client.aout_buy(self.share.code
+                                            ,self.price
+                                            ,self.oneHand)
+        if resoult['state'] == 'success':
+            self.buyEntrust = resoult['成交合同']
+            self.step = 5
+            return True
+        else:
+            print('交易失败')
+            print(resoult['content'])
+            return False
+
+
+    def buy_sell(self):
         resoult = Istrate.client.aout_buy_sell(self.share.code
                                             ,self.buyPrice
                                             ,self.sellPrice
@@ -55,27 +75,24 @@ class Istrate(abc.ABC):
         if resoult['state'] == 'success':
             self.sellEntrust = resoult['卖出合同']
             self.buyEntrust = resoult['买入合同']
-            self.rbuyPrice = resoult['buyprice']
-            self.rsellPrice = resoult['sellprice']
             return True
         else:
             if '错误合同' in resoult: 
                 if '资金不足' in resoult['content']:
                     self.sellEntrust = resoult['错误合同']
-                    self.buyEntrust = resoult['错误合同']
-                    self.rbuyPrice = resoult['buyprice']
-                    self.rsellPrice = resoult['sellprice']                        
+                    self.buyEntrust = resoult['错误合同']                      
                     return True
             else:
                 self.logger.info(resoult['content'])
                 return False
 
-    # 开仓条件及操作
+
+    # 开仓条件
     def start(self):
         return True
 
 
-    # 调仓条件及操作
+    # 调仓条件
     def adjust(self):
         return True
 
@@ -100,24 +117,16 @@ class Istrate(abc.ABC):
     def cancel_entrust(self,df,entrust):
         # 不存在
         if len(df.loc[df['合同编号'] == entrust]) == 0:
+            print('合同消失')
             return False
         else:
+            print(int(df.loc[df['合同编号'] == entrust].index[0]))
             self.client.have_cancel_entrust(int(df.loc[df['合同编号'] == entrust].index[0]) + 1)
             return True
     
 
-    def run(self,df):
-
-        if self.step == 0:
-            self.start()
-
-        elif self.step == 1 and self.end():
-            self.adjust(df)
-
-
-    
     @abc.abstractmethod
-    def setPrice(self,state,price):
+    def setPrice(self,price):
         pass
 
 
@@ -133,7 +142,7 @@ class Istrate(abc.ABC):
 
         while True:
 
-            s = 3
+            s = 10
             time.sleep(s)
 
             if len(cls.rerunList) > 0 and config.strateQueue.qsize() == 0:
@@ -154,13 +163,15 @@ class Istrate(abc.ABC):
             if isinstance(data,list):
 
                 df = cls.client.getEntrust()
-                
+                print(df)
                 for strate in data:
                     strate.run(df)
 
             else:
-                if data.start():
-                    data.step = 1
+                if data.step == 0 or data.step == 10:
+                    if data.run():
+                        cls.rerunList.append(data)
+                    else:
+                        pass #操作失败
+                else:
                     cls.rerunList.append(data)
-
-

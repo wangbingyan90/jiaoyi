@@ -323,11 +323,10 @@ class ClientTrader(IClientTrader):
 
         self._submit_trade()
 
-        self._handle_pop_dialogs(
+        return self._handle_pop_dialogs(
             handler_class=pop_dialog_handler.TradePopDialogHandler
         )
-
-        return price
+        
 
     @perf_clock
     def aout_sell(self, security, price, amount, **kwargs):
@@ -610,16 +609,6 @@ class ClientTrader(IClientTrader):
         if security.lower().startswith("sh"):
             self._set_stock_exchange_type("上海Ａ股")
 
-        self.wait(0.1)
-
-        while '-' == self.main.child_window(control_id=1024, class_name="Static").window_text():
-            pass
-
-        rprice = float(self.main.child_window(control_id=1024, class_name="Static").window_text())
-
-        if rprice < price:
-            price = rprice
-
         self._type_edit_control_keys(
             self._config.TRADE_PRICE_CONTROL_ID,
             easyutils.round_price_by_code(price, code),
@@ -627,8 +616,6 @@ class ClientTrader(IClientTrader):
         self._type_edit_control_keys(
             self._config.TRADE_AMOUNT_CONTROL_ID, str(int(amount))
         )
-        
-        return price
 
 
     def aout_sell_set_trade_params(self, security, price, amount):
