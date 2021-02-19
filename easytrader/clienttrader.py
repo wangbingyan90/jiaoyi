@@ -793,6 +793,9 @@ class BaseLoginClientTrader(ClientTrader):
             password = account["password"]
             comm_password = account.get("comm_password")
             exe_path = account.get("exe_path")
+            st = '..'
+            if exe_path[:2] in st:
+                exe_path = os.path.abspath('..') + exe_path[2:]
         self.login(
             user,
             password,

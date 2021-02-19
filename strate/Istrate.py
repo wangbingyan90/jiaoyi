@@ -163,7 +163,7 @@ class Istrate(abc.ABC):
             if isinstance(data,list):
 
                 df = cls.client.getEntrust()
-                print(df)
+                # print(df)
                 for strate in data:
                     strate.run(df)
 
