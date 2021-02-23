@@ -65,9 +65,8 @@ class TpriceStare(Istrate):
 
 if __name__ == "__main__":
     
-    t = TpriceStare(name = '测试',step = 10,share = share('128010'),price = 116,num = 1,change = 1.0,have=10,bug = True)
-    # t.initClient()
-    # df = t.client.getEntrust()
-    # t.run(df)
+    t = TpriceStare(name = '测试',step = 10,share = share('128010'),price = 118,num = 1,change = 1.0,have=10,bug = False)
     config.strateQueue.put(t) 
+    t1 = TpriceStare(name = '测试',step = 10,share = share('113038'),price = 210,num = 1,change = 2.0,have=10,bug = False)
+    config.strateQueue.put(t1)
     TpriceStare.work()

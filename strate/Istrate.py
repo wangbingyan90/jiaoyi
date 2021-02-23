@@ -18,14 +18,14 @@ class Istrate(abc.ABC):
         self.have = have
         self.state = '常'
         self.price = price
-        filename = config.homePath + name+'['+share.code+']'+'.log'
+        day = time.strftime("%Y-%m-%d", time.localtime())
+        filename = config.homePath + day +name +'['+share.code+']'+'.log'
         name = name+'['+share.code+']'
         self.sellEntrust = 'null'
         self.buyEntrust = 'null'
-
-        self.readConfig(price,filename)
-        # if bug:
-        #     self.price = price
+        
+        if not bug:
+            self.readConfig(filename)
 
         self.logger = stratelog.stratelog(name,filename,self)
         
@@ -36,7 +36,7 @@ class Istrate(abc.ABC):
         self.change = change
 
     # 读取配置价格
-    def readConfig(self, price,filename):
+    def readConfig(self,filename):
         # 日志模式 未实现
         if os.path.exists(filename):
             f = open(filename,encoding = 'utf8')
@@ -142,7 +142,7 @@ class Istrate(abc.ABC):
 
         while True:
 
-            s = 10
+            s = 20
             time.sleep(s)
 
             if len(cls.rerunList) > 0 and config.strateQueue.qsize() == 0:

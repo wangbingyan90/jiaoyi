@@ -177,7 +177,7 @@ class ClientTrader(IClientTrader):
     @perf_clock
     def have_cancel_entrust(self, nums):
         x = 50
-        y = 20 + 25 * nums
+        y = 20 + 20 * nums - 5
         self._app.top_window().child_window(control_id=1047,class_name="CVirtualGridCtrl").double_click(coords=(x, y))
         time.sleep(0.2)
         return self._handle_pop_dialogs()
