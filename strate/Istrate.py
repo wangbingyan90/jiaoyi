@@ -1,5 +1,5 @@
 import abc,os,threading,time,sys
-
+from entrustobj import entrustobj
 from config import stratelog,config
 sys.path.append(".")
 from easytrader import api
@@ -12,10 +12,11 @@ class Istrate(abc.ABC):
     client = api.use('htzq_client') # 客户端对象
 
     
-    def __init__(self,name,step = 0,share = None, price = 0, num = 0, change = 0, have = 0, bug = False):
+    def __init__(self,name,step = 0,share = None, price = 0, num = 0, change = 0, have = 0,waittime = 7 ,bug = False):
 
         self.step = step # 0为开仓状态，5为进行开仓，10开仓完毕，15进行调仓状态，20为清仓状态
         self.have = have
+        self.MaxHave = 20
         self.state = '常'
         self.price = price
         day = time.strftime("%Y-%m-%d", time.localtime())
@@ -23,6 +24,9 @@ class Istrate(abc.ABC):
         name = name+'['+share.code+']'
         self.sellEntrust = 'null'
         self.buyEntrust = 'null'
+        self.entrusts = []
+        self.waittime = waittime 
+        self.nowwaittime = waittime 
         
         if not bug:
             self.readConfig(filename)
@@ -49,6 +53,9 @@ class Istrate(abc.ABC):
                 self.have = int(last_line[7])
                 self.buyEntrust = last_line[9]
                 self.sellEntrust = last_line[11]
+                self.buyPrice = self.price - self.change
+                self.sellPrice = self.price + self.change
+
             except BaseException:
                 print('日志读取失败')
 
@@ -59,12 +66,44 @@ class Istrate(abc.ABC):
                                             ,self.oneHand)
         if resoult['state'] == 'success':
             self.buyEntrust = resoult['成交合同']
-            self.step = 5
             return True
         else:
             print('交易失败')
             print(resoult['content'])
             return False
+
+    def buys(self,price,change,n): # 梯度买入
+        buyEntrusts = []
+        for i in range(n):
+            
+            resoult = Istrate.client.aout_buy(self.share.code
+                                                ,price + change * i
+                                                ,self.oneHand)
+            if resoult['state'] == 'success':
+                e = entrustobj(entrustcode = resoult['成交合同'], price = price + change * i)
+                buyEntrusts.append(e)
+            else:
+                print('交易失败')
+                print(resoult['content'])
+                return False
+        return buyEntrusts
+
+
+    def sells(self,price,change,n): # 梯度卖出
+        sellsEntrusts = []
+        for i in range(n):
+            
+            resoult = Istrate.client.aout_sell(self.share.code
+                                                ,price - change * i
+                                                ,self.oneHand)
+            if resoult['state'] == 'success':
+                e = entrustobj(entrustcode = resoult['成交合同'], price = price - change * i)
+                sellsEntrusts.append(e)
+            else:
+                print('交易失败')
+                print(resoult['content'])
+                return False
+        return sellsEntrusts
 
 
     def buy_sell(self):
@@ -129,7 +168,14 @@ class Istrate(abc.ABC):
     def setPrice(self,price):
         pass
 
-
+    # 时间周期
+    def wait_Time(self):
+        if self.nowwaittime == 0:
+            self.nowwaittime = self.waittime
+            return True
+        else:
+            self.nowwaittime = self.nowwaittime - 1
+            return False
 
     @classmethod
     def initClient(cls):
@@ -142,7 +188,7 @@ class Istrate(abc.ABC):
 
         while True:
 
-            s = 20
+            s = 3
             time.sleep(s)
 
             if len(cls.rerunList) > 0 and config.strateQueue.qsize() == 0:
@@ -161,17 +207,21 @@ class Istrate(abc.ABC):
             data = config.strateQueue.get()
 
             if isinstance(data,list):
-
-                df = cls.client.getEntrust()
-                # print(df)
+                runList = []
                 for strate in data:
-                    strate.run(df)
+                    if strate.wait_Time():
+                        runList.append(strate)
+
+                if len(runList)>0:
+                    print(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) )
+                    df = cls.client.getEntrust()
+                    # print(df)
+                    for strate in runList:
+                        strate.run(df)
 
             else:
                 if data.step == 0 or data.step == 10:
-                    if data.run():
-                        cls.rerunList.append(data)
-                    else:
-                        pass #操作失败
+                    data.run()
+                    cls.rerunList.append(data)
                 else:
                     cls.rerunList.append(data)

@@ -4,3 +4,5 @@ text.py
 *.log
 *.pkl
 zT
+
+loopback

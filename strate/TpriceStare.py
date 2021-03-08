@@ -7,8 +7,8 @@ class TpriceStare(Istrate):
     基本做T
     '''
 
-    def __init__(self,name,step = 0,share = None,price = 0,num = 0,change = 0,have = 0,bug = False):
-        super().__init__(name,step,share,price,num,change,have,bug)
+    def __init__(self,name,step = 0,share = None,price = 0,num = 0,change = 0,have = 0,waittime = 7, bug = False):
+        super().__init__(name = name,step = step,share = share,price = price,num = num,change = change,have = have,waittime = waittime,bug = bug)
 
     
 

@@ -319,7 +319,7 @@ class ClientTrader(IClientTrader):
     def aout_buy(self, security, price, amount, **kwargs):
         self._switch_left_menus(["买入[F1]"])
 
-        price = self.aout_buy_set_trade_params(security, price,amount)
+        self.aout_buy_set_trade_params(security, price,amount)
 
         self._submit_trade()
 
@@ -332,14 +332,13 @@ class ClientTrader(IClientTrader):
     def aout_sell(self, security, price, amount, **kwargs):
         self._switch_left_menus(["卖出[F2]"])
 
-        price = self.aout_sell_set_trade_params(security, price,amount)
+        self.aout_buy_set_trade_params(security, price,amount)
 
         self._submit_trade()
 
-        self._handle_pop_dialogs(
+        return self._handle_pop_dialogs(
             handler_class=pop_dialog_handler.TradePopDialogHandler
         )
-        return price
 
 
     @perf_clock
